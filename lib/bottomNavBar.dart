@@ -1,3 +1,4 @@
+import 'package:cabinet_mobile/theme.dart';
 import 'package:flutter/material.dart';
 
 class BottomNavBar extends StatelessWidget{
@@ -12,7 +13,7 @@ class BottomNavBar extends StatelessWidget{
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.add_chart_outlined),
           label: 'Главная',
         ),
         BottomNavigationBarItem(
@@ -25,7 +26,7 @@ class BottomNavBar extends StatelessWidget{
         ),
       ],
       currentIndex: selectedIndex,
-      selectedItemColor: Colors.amber[800],
+      selectedItemColor: colorGreen,
       onTap: onItemTapped,
     );
   }
