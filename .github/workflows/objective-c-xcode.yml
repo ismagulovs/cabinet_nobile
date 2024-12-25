@@ -8,23 +8,35 @@ on:
 
 jobs:
   build:
-    name: Build and analyse default scheme using xcodebuild command
-    runs-on: macos-latest
+    runs-on: macos-latest # или specific version, если нужно
+    strategy:
+      matrix:
+        target: [apk, ipa] # Сборка для Android и iOS
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set Default Scheme
-        run: |
-          scheme_list=$(xcodebuild -list -json | tr -d "\n")
-          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
-          echo $default | cat >default
-          echo Using default scheme: $default
-      - name: Build
-        env:
-          scheme: ${{ 'default' }}
-        run: |
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          xcodebuild clean build analyze -scheme "$scheme" -"$filetype_parameter" "$file_to_build" | xcpretty && exit ${PIPESTATUS[0]}
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x' # Укажите нужную версию Flutter
+
+      - run: flutter pub get
+
+      - name: Build Android
+        if: matrix.target == 'apk'
+        run: flutter build apk --release
+
+      - name: Build iOS
+        if: matrix.target == 'ipa'
+        run: flutter build ipa --release --export-options export.plist
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target }}-build
+          path: build/${{ matrix.target }}
