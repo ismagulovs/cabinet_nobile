@@ -1,37 +1,36 @@
-image: macos-14-xcode-15
-
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-  GIT_DEPTH: "1"
+image: macos-14 # Или конкретная версия macOS, если требуется (например, macos-13)
 
 stages:
-  - install
   - build
-  - test
+
+variables:
+  FLUTTER_VERSION: "3.0.0" # Актуальная версия Flutter (замените на нужную)
+  BUNDLE_ID: "kz.kdb.app.cabinet_mobile" # Идентификатор вашего приложения
 
 before_script:
-  - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  - brew update
-  - brew install some_dependency # Установите необходимые зависимости
+  - eval "$(/opt/homebrew/bin/brew shellenv)"
+  - brew install git ruby # Ruby нужен для fastlane
+  - gem install bundler --no-document
+  - bundle install # Установка зависимостей fastlane (из Gemfile, если есть)
+  - git config --global user.email "ci@example.com"
+  - git config --global user.name "GitLab CI"
+  - flutter channel stable
+  - flutter upgrade $FLUTTER_VERSION
+  - flutter pub get
 
-install_dependencies:
-  stage: install
-  script:
-    - echo "Installing dependencies..."
-    - brew install another_dependency
-
-build_app:
+build_ios:
   stage: build
   script:
-    - echo "Building the app..."
-    - xcodebuild -project YourProject.xcodeproj -scheme YourScheme -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.0' build
+    - bundle exec fastlane match development # Используем development сертификаты
+    - bundle exec fastlane build_ios # Сборка проекта с использованием fastlane
+  artifacts:
+    paths:
+      - build/ios/ipa/*.ipa
+    expire_in: 30 days
+  only:
+    - main
 
-test_app:
-  stage: test
-  script:
-    - echo "Running tests..."
-    - xcodebuild test -project YourProject.xcodeproj -scheme YourScheme -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.0'
-
-after_script:
-  - echo "Cleaning up..."
-  - docker logout
+cache:
+  paths:
+    - .pub-cache
+    - vendor/bundle # Кэш Bundler
