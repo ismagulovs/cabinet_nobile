@@ -3,7 +3,7 @@ stages:
 
 ios_build:
   stage: build
-  image: macos-xcode:latest # или другой подходящий образ с macOS и Xcode
+  image: gitlab-org/macos-images/xcode:14.3 # или другой подходящий образ с macOS и Xcode
   before_script:
     - brew install ruby # Устанавливаем Ruby (необходимо для Fastlane)
     - gem install bundler
