@@ -1,20 +1,37 @@
-.macos_saas_runners:
-  tags:
-    - saas-macos-medium-m1
-  image: macos-14-xcode-15
-  before_script:
-    - echo "started by ${GITLAB_USER_NAME} / @${GITLAB_USER_LOGIN}"
+image: macos-14-xcode-15
 
-build:
-  extends:
-    - .macos_saas_runners
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_DEPTH: "1"
+
+stages:
+  - install
+  - build
+  - test
+
+before_script:
+  - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  - brew update
+  - brew install some_dependency # Установите необходимые зависимости
+
+install_dependencies:
+  stage: install
+  script:
+    - echo "Installing dependencies..."
+    - brew install another_dependency
+
+build_app:
   stage: build
   script:
-    - echo "running scripts in the build job"
+    - echo "Building the app..."
+    - xcodebuild -project YourProject.xcodeproj -scheme YourScheme -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.0' build
 
-test:
-  extends:
-    - .macos_saas_runners
+test_app:
   stage: test
   script:
-    - echo "running scripts in the test job"
+    - echo "Running tests..."
+    - xcodebuild test -project YourProject.xcodeproj -scheme YourScheme -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 11,OS=14.0'
+
+after_script:
+  - echo "Cleaning up..."
+  - docker logout
