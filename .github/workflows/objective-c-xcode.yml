@@ -33,7 +33,7 @@ jobs:
 
       - name: Build iOS
         if: matrix.target == 'ipa'
-        run: flutter build ipa --release --export-options export.plist
+        run: flutter build ipa
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
