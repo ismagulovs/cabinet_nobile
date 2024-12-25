@@ -17,7 +17,7 @@ ios_build:
     expire_in: 1 week # Срок хранения артефактов
 
 android_build:
-  stage: build-apk
+  stage: build
   image: cirrusci/flutter:stable
   script:
     - flutter pub get
