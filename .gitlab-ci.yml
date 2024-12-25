@@ -1,0 +1,28 @@
+stages:
+  - build
+
+ios_build:
+  stage: build
+  image: macos-xcode:latest # или другой подходящий образ с macOS и Xcode
+  before_script:
+    - brew install ruby # Устанавливаем Ruby (необходимо для Fastlane)
+    - gem install bundler
+    - bundle install
+  script:
+    - flutter pub get
+    - flutter build ios --release --no-codesign # Сборка без подписи
+  artifacts:
+    paths:
+      - build/ios/ipa/*.ipa
+    expire_in: 1 week # Срок хранения артефактов
+
+android_build:
+  stage: build
+  image: cirrusci/flutter:stable
+  script:
+    - flutter pub get
+    - flutter build apk --release
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/app-release.apk
+    expire_in: 1 week
