@@ -26,3 +26,24 @@ android_build:
     paths:
       - build/app/outputs/flutter-apk/app-release.apk
     expire_in: 1 week
+
+.macos_saas_runners:
+  tags:
+    - saas-macos-medium-m1
+  image: macos-14-xcode-15
+  before_script:
+    - echo "started by ${GITLAB_USER_NAME} / @${GITLAB_USER_LOGIN}"
+
+build:
+  extends:
+    - .macos_saas_runners
+  stage: build
+  script:
+    - echo "running scripts in the build job"
+
+test:
+  extends:
+    - .macos_saas_runners
+  stage: test
+  script:
+    - echo "running scripts in the test job"
